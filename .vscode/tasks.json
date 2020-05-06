@@ -1,0 +1,77 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "dependsOn": ["generate", "build-os"],
+      "dependsOrder": "sequence"
+    },
+
+    {
+      "label": "build-os",
+      "type": "shell",
+      "dependsOn": ["build-linux", "build-windows"],
+      "dependsOrder": "parallel"
+    },
+    {
+      "label": "generate",
+      "type": "shell",
+      "command": "go generate ./...",
+      "windows": {
+        "options": {
+          "cwd": "${workspaceFolder}"
+        }
+      },
+      "linux": {
+        "options": {
+          "cwd": "${workspaceFolder}"
+        }
+      }
+    },
+    {
+      "label": "build-linux",
+      "type": "shell",
+      "command": "go build github.com/Schidstorm/go-remote/example",
+      "windows": {
+        "options": {
+          "cwd": "${workspaceFolder}/example/bin",
+          "env": {
+            "GOOS": "linux"
+          }
+        }
+      },
+      "linux": {
+        "options": {
+          "cwd": "${workspaceFolder}/example/bin",
+          "env": {
+            "GOOS": "linux"
+          }
+        }
+      }
+    },
+    {
+      "label": "build-windows",
+      "type": "shell",
+      "command": "go build github.com/Schidstorm/go-remote/example",
+      "windows": {
+        "options": {
+          "cwd": "${workspaceFolder}/example/bin",
+          "env": {
+            "GOOS": "windows"
+          }
+        }
+      },
+      "linux": {
+        "options": {
+          "cwd": "${workspaceFolder}/example/bin",
+          "env": {
+            "GOOS": "windows"
+          }
+        }
+      }
+    }
+  ]
+}
