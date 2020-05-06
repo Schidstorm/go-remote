@@ -24,7 +24,7 @@ func remote() {
 }
 
 func local() {
-	connector1, err := connector.SshWithPassphrase(os.Getenv("SERVER_SSH_ENDPOINT"), os.Getenv("SERVER_SSH_PASSWORD"), os.Getenv("SERVER_SSH_USER"))
+	connector1, err := connector.SshWithPassphrase(os.Getenv("SERVER_SSH_ENDPOINT"), os.Getenv("SERVER_SSH_PASSPHRASE"), os.Getenv("SERVER_SSH_USER"))
 	if err != nil {
 		panic(err)
 	}

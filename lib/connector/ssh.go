@@ -18,6 +18,7 @@ type Ssh struct {
 	Address   string
 	Config    *ssh.ClientConfig
 	sshClient *ssh.Client
+	os        lib.OS
 }
 
 func SshNormal(address string, user string) (*Ssh, error) {
@@ -92,8 +93,10 @@ func (ssh *Ssh) Connect() (io.ReadWriteCloser, error) {
 		return nil, err
 	}
 
+	ssh.os = ssh.GuessOs()
+
 	var localFileName string
-	if ssh.GuessOs() == lib.Linux {
+	if ssh.os == lib.Linux {
 		log.Println("Detecting linux")
 		localFileName = strings.ReplaceAll(path.Base(os.Args[0]), ".exe", "")
 	} else {
@@ -116,7 +119,7 @@ func (ssh *Ssh) Connect() (io.ReadWriteCloser, error) {
 }
 
 func (ssh *Ssh) transferBinary(localPath string) (string, error) {
-	remotePath := "/tmp/go-remote-" + lib.VERSION
+	remotePath := path.Join(os.TempDir(), "go-remote-"+lib.VERSION)
 	log.Println("Transfer binary to " + remotePath)
 	fileCopySession, err := ssh.sshClient.NewSession()
 	if err != nil {
@@ -129,15 +132,17 @@ func (ssh *Ssh) transferBinary(localPath string) (string, error) {
 	}
 	fileCopySession.Close()
 
-	chmodSession, err := ssh.sshClient.NewSession()
-	if err != nil {
-		return "", err
-	}
-	defer chmodSession.Close()
-	log.Println("Make file executable")
-	err = chmodSession.Run("chmod +x " + remotePath)
-	if err != nil {
-		return "", err
+	if ssh.os == lib.Linux {
+		chmodSession, err := ssh.sshClient.NewSession()
+		if err != nil {
+			return "", err
+		}
+		defer chmodSession.Close()
+		log.Println("Make file executable")
+		err = chmodSession.Run("chmod +x " + remotePath)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return remotePath, nil
